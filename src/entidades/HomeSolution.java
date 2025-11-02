@@ -1,22 +1,37 @@
 package entidades;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.List;
 
 public class HomeSolution implements IHomeSolution{
+    List<Tupla<Integer, String>> empleados = new ArrayList<>();
+    List<Tupla<Integer, String>> proyectos = new ArrayList<>();
+
     @Override
     public void registrarEmpleado(String nombre, double valor) throws IllegalArgumentException {
+        Empleado empleado=  new EmpleadoContratado(nombre,valor);
 
+        Tupla<Integer, String> tuplaEmpleado = new Tupla<>(empleados.size()+1, empleado.nombre);
+
+        empleados.add(tuplaEmpleado);
     }
 
     @Override
     public void registrarEmpleado(String nombre, double valor, String categoria) throws IllegalArgumentException {
+        Empleado empleado=  new EmpleadoDePlanta(nombre,valor,categoria);
+
+        Tupla<Integer, String> tuplaEmpleado = new Tupla<>(empleados.size()+1, empleado.nombre);
+
+        empleados.add(tuplaEmpleado);
 
     }
 
     @Override
     public void registrarProyecto(String[] titulos, String[] descripcion, double[] dias, String domicilio, String[] cliente, String inicio, String fin) throws IllegalArgumentException {
 
+        proyectos.add(new Tupla<>(proyectos.size()+1, domicilio));
     }
 
     @Override
@@ -66,17 +81,19 @@ public class HomeSolution implements IHomeSolution{
 
     @Override
     public List<Tupla<Integer, String>> proyectosFinalizados() {
-        return Collections.emptyList();
+
+        return proyectos;
     }
 
     @Override
     public List<Tupla<Integer, String>> proyectosPendientes() {
-        return Collections.emptyList();
+        return proyectos;
     }
 
     @Override
     public List<Tupla<Integer, String>> proyectosActivos() {
-        return Collections.emptyList();
+
+        return proyectos;
     }
 
     @Override
@@ -121,7 +138,7 @@ public class HomeSolution implements IHomeSolution{
 
     @Override
     public List<Tupla<Integer, String>> empleados() {
-        return Collections.emptyList();
+        return empleados;
     }
 
     @Override
