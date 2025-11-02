@@ -1,0 +1,59 @@
+# Compiled class files
+*.class
+
+# Package Files #
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# Log Files #
+*.log
+logs/
+
+# IDE-specific files and directories (examples for common IDEs) #
+.idea
+.idea/             # IntelliJ IDEA
+.vscode/           # VS Code
+.classpath         # Eclipse
+.project           # Eclipse
+.settings/         # Eclipse
+target/            # Maven build directory
+build/             # Gradle build directory
+bin/               # Generic build output directory
+
+# Operating System files #
+.DS_Store          # macOS
+Thumbs.db          # Windows
+
+# Maven #
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# Gradle #
+.gradle/
+gradle-wrapper.jar
+!gradle-wrapper.properties  # Keep the wrapper properties file
+!gradle/wrapper/gradle-wrapper.jar # Keep the wrapper jar in the gradle/wrapper directory
+gradle.properties # Local Gradle properties
+.project
+.classpath
+.settings
+out/
+
+# Eclipse #
+.metadata
+nbproject/           # NetBeans
+
+# Temporary files #
+*~
+*.bak
+*.swp
