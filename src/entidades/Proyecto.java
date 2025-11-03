@@ -4,13 +4,20 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Proyecto {
-    Map<String, Tarea> tareaMap = new HashMap<>();
 
-    Cliente cliente;
-    String domicilio;
-    String fechaInicio;
-    String fechaFin;
 
+    private Integer id;
+    private Map<String, Tarea> tareaMap = new HashMap<>();
+
+    private Cliente cliente;
+
+
+    private String domicilio;
+    private String fechaInicio;
+    private String fechaFin;
+    private String fechaEstimadaFin;
+
+    private String estado;
 
     public Proyecto(String[] titulos, String[] descripciones,
                     double[] dias, String domicilio, Cliente cliente,
@@ -18,13 +25,17 @@ public class Proyecto {
         if (titulos.length != descripciones.length || titulos.length != dias.length) {
             throw new IllegalArgumentException("All arrays must have the same length.");
         }
-
+        this.id = IdGenerator.nextId();
         this.domicilio = domicilio;
         this.cliente = cliente;
         this.fechaInicio = inicio;
+        this.fechaEstimadaFin = fin;
         this.fechaFin = fin;
 
+        FechaUtil.validarFechas(inicio, fin);
+
         java.util.Set<String> titulosSet = new java.util.HashSet<>();
+
         for (int i = 0; i < titulos.length; i++) {
             if (!titulosSet.add(titulos[i])) {
                 throw new IllegalArgumentException("Duplicate title: " + titulos[i]);
@@ -32,6 +43,57 @@ public class Proyecto {
             Tarea tarea = new Tarea(titulos[i], descripciones[i], dias[i]);
             tareaMap.put(titulos[i], tarea);
         }
+        
+        this.estado = Estado.pendiente;
     }
 
+    public String getDomicilio() {
+        return domicilio;
+    }
+
+    public Integer getId() {
+        return id;
+    }
+
+    public String getEstado() {
+        return estado;
+    }
+
+    public void finalizarProyecto(String fechaFin) throws IllegalArgumentException {
+        FechaUtil.validarFecha(fechaFin);
+        FechaUtil.validarFechas(this.fechaInicio, fechaFin);
+        for(Tarea tarea : tareaMap.values()) {
+            tarea.finalizarTarea();
+        }
+        this.fechaFin = fechaFin;
+        this.estado=Estado.finalizado;
+
+    }
+
+    public Object[] tareasProyectoNoAsignadas() {
+        return tareaMap.values().stream()
+                .filter(tarea -> tarea.empleadoAsignadoLegajo == null)
+                .toArray();
+    }
+
+    public void asignarEmpleados(String tituloTarea, Integer legajoEmpleado){
+        Tarea tarea = obtenerTareaPorTitulo(tituloTarea);
+        tarea.asignarEmpleado(legajoEmpleado);
+        if(tareaMap.values().stream().allMatch(t -> t.empleadoAsignadoLegajo != null)){
+            this.estado=Estado.activo;
+        }
+    }
+
+    public void registrarRetrasoEnTarea(String titulo, double cantidadDias) {
+        Tarea tarea = obtenerTareaPorTitulo(titulo);
+        tarea.registrarRetraso(cantidadDias);
+        this.fechaFin = FechaUtil.sumarDiasAFecha(this.fechaFin, cantidadDias);
+    }
+    private Tarea obtenerTareaPorTitulo(String titulo){
+        Tarea tarea = tareaMap.get(titulo);
+        if(tarea==null){
+            throw new IllegalArgumentException("Tarea no encontrada: " + titulo);
+        }
+        return tarea;
+    }
 }

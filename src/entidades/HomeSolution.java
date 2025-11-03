@@ -1,52 +1,78 @@
 package entidades;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.EnumMap;
-import java.util.List;
+import java.util.*;
 
-public class HomeSolution implements IHomeSolution{
+public class HomeSolution implements IHomeSolution {
     List<Tupla<Integer, String>> empleados = new ArrayList<>();
     List<Tupla<Integer, String>> proyectos = new ArrayList<>();
 
+    private final Map<Integer, Proyecto> proyectoMap = new HashMap<>();
+    private final Map<Integer, Empleado> empleadoMap = new HashMap<>();
+
     @Override
     public void registrarEmpleado(String nombre, double valor) throws IllegalArgumentException {
-        Empleado empleado=  new EmpleadoContratado(nombre,valor);
-
-        Tupla<Integer, String> tuplaEmpleado = new Tupla<>(empleados.size()+1, empleado.nombre);
-
-        empleados.add(tuplaEmpleado);
+        Empleado empleado = new EmpleadoContratado(nombre, valor);
+        registrarEmpleadoComun(empleado);
     }
 
     @Override
     public void registrarEmpleado(String nombre, double valor, String categoria) throws IllegalArgumentException {
-        Empleado empleado=  new EmpleadoDePlanta(nombre,valor,categoria);
+        Empleado empleado = new EmpleadoDePlanta(nombre, valor, categoria);
+        registrarEmpleadoComun(empleado);
+    }
 
-        Tupla<Integer, String> tuplaEmpleado = new Tupla<>(empleados.size()+1, empleado.nombre);
-
+    private void registrarEmpleadoComun(Empleado empleado) {
+        Tupla<Integer, String> tuplaEmpleado = new Tupla<>(empleado.getLegajo(), empleado.getNombre());
         empleados.add(tuplaEmpleado);
-
+        empleadoMap.put(empleado.getLegajo(), empleado);
     }
 
     @Override
     public void registrarProyecto(String[] titulos, String[] descripcion, double[] dias, String domicilio, String[] cliente, String inicio, String fin) throws IllegalArgumentException {
+        Cliente clienteObj = new Cliente(cliente[0], cliente[1]);
+        Proyecto proyecto = new Proyecto(titulos, descripcion, dias, domicilio, clienteObj, inicio, fin);
 
-        proyectos.add(new Tupla<>(proyectos.size()+1, domicilio));
+        proyectos.add(new Tupla<>(proyecto.getId(), proyecto.getDomicilio()));
+        proyectoMap.put(proyecto.getId(), proyecto);
     }
 
     @Override
     public void asignarResponsableEnTarea(Integer numero, String titulo) throws Exception {
+        Proyecto proyecto = proyectoMap.get(numero);
+        Object[] empleadosNoAsignados = this.empleadosNoAsignados();
+        Empleado primerEmpleadoNoAsignado = (Empleado) (empleadosNoAsignados.length > 0 ? empleadosNoAsignados[0] : null);
+        proyecto.asignarEmpleados(titulo, primerEmpleadoNoAsignado.getLegajo());
+        primerEmpleadoNoAsignado.setDisponible(false);
 
     }
 
     @Override
     public void asignarResponsableMenosRetraso(Integer numero, String titulo) throws Exception {
+        Proyecto proyecto = proyectoMap.get(numero);
+        Object[] empleadosNoAsignados = this.empleadosNoAsignados();
+        if (empleadosNoAsignados.length == 0) {
+            throw new Exception("No hay empleados disponibles");
+        }
+        Empleado empleadoConMenosRetrasos = null;
+        int minRetrasos = Integer.MAX_VALUE;
 
+        for (Object obj : empleadosNoAsignados) {
+            Empleado empleado = (Empleado) obj;
+            if (empleado.getCantidadRetrasos() < minRetrasos) {
+                minRetrasos = empleado.getCantidadRetrasos();
+                empleadoConMenosRetrasos = empleado;
+            }
+        }
+        if (empleadoConMenosRetrasos != null) {
+            proyecto.asignarEmpleados(titulo, empleadoConMenosRetrasos.getLegajo());
+            empleadoConMenosRetrasos.setDisponible(false);
+        }
     }
 
     @Override
     public void registrarRetrasoEnTarea(Integer numero, String titulo, double cantidadDias) throws IllegalArgumentException {
-
+        Proyecto proyecto = proyectoMap.get(numero);
+        proyecto.registrarRetrasoEnTarea(titulo, cantidadDias);
     }
 
     @Override
@@ -61,7 +87,7 @@ public class HomeSolution implements IHomeSolution{
 
     @Override
     public void finalizarProyecto(Integer numero, String fin) throws IllegalArgumentException {
-
+        proyectoMap.get(numero).finalizarProyecto(fin);
     }
 
     @Override
@@ -81,24 +107,50 @@ public class HomeSolution implements IHomeSolution{
 
     @Override
     public List<Tupla<Integer, String>> proyectosFinalizados() {
-
+        List<Tupla<Integer, String>> proyectos = new ArrayList<>();
+        for (Map.Entry<Integer, Proyecto> entry : proyectoMap.entrySet()) {
+            Proyecto proyecto = entry.getValue();
+            if (proyecto.getEstado().equals(Estado.finalizado)) {
+                proyectos.add(new Tupla<>(proyecto.getId(), proyecto.getDomicilio()));
+            }
+        }
         return proyectos;
     }
 
     @Override
     public List<Tupla<Integer, String>> proyectosPendientes() {
+        List<Tupla<Integer, String>> proyectos = new ArrayList<>();
+        for (Map.Entry<Integer, Proyecto> entry : proyectoMap.entrySet()) {
+            Proyecto proyecto = entry.getValue();
+            if (proyecto.getEstado().equals(Estado.pendiente)) {
+                proyectos.add(new Tupla<>(proyecto.getId(), proyecto.getDomicilio()));
+            }
+        }
         return proyectos;
     }
 
     @Override
     public List<Tupla<Integer, String>> proyectosActivos() {
 
+        List<Tupla<Integer, String>> proyectos = new ArrayList<>();
+        for (Map.Entry<Integer, Proyecto> entry : proyectoMap.entrySet()) {
+            Proyecto proyecto = entry.getValue();
+            if (proyecto.getEstado().equals(Estado.activo)) {
+                proyectos.add(new Tupla<>(proyecto.getId(), proyecto.getDomicilio()));
+            }
+        }
         return proyectos;
     }
 
     @Override
     public Object[] empleadosNoAsignados() {
-        return new Object[0];
+        List<Empleado> empleados = new ArrayList<>();
+        for(Map.Entry<Integer, Empleado> entry : empleadoMap.entrySet()) {
+            Empleado empleado = entry.getValue();
+            if(empleado.isDisponible())
+                empleados.add(empleado);
+        }
+        return empleados.toArray();
     }
 
     @Override
@@ -113,12 +165,16 @@ public class HomeSolution implements IHomeSolution{
 
     @Override
     public List<Tupla<Integer, String>> empleadosAsignadosAProyecto(Integer numero) {
+        Proyecto proyecto = proyectoMap.get(numero);
+        proyecto.
         return Collections.emptyList();
     }
 
     @Override
     public Object[] tareasProyectoNoAsignadas(Integer numero) {
-        return new Object[0];
+        Proyecto proyecto = proyectoMap.get(numero);
+        return proyecto.tareasProyectoNoAsignadas();
+
     }
 
     @Override
