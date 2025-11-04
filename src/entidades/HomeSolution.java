@@ -208,4 +208,16 @@ public class HomeSolution implements IHomeSolution {
     public String consultarProyecto(Integer numero) {
         return proyectoMap.get(numero).toString();
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("HomeSolution Projects Summary:\n");
+        for (Tupla<Integer, String> tuplaProyecto : proyectos) {
+            Proyecto proyecto = proyectoMap.get(tuplaProyecto.getValor1());
+            sb.append(proyecto.toString()).append("\n");
+            sb.append("--------------------------------------------------\n");
+        }
+        return sb.toString();
+    }
 }

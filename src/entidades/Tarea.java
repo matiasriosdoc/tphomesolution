@@ -38,4 +38,17 @@ public class Tarea {
         }
         this.diasDeRetraso += cantidadDias;
     }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Tarea: ").append(titulo).append("\n");
+        sb.append("Descripción: ").append(descripcion).append("\n");
+        sb.append("Duración (días): ").append(duracionDias).append("\n");
+        sb.append("Días de retraso: ").append(diasDeRetraso).append("\n");
+        sb.append("Empleado asignado: ")
+                .append(empleadoAsignadoLegajo != null ? empleadoAsignadoLegajo : "No asignado").append("\n");
+        sb.append("Finalizada: ").append(esFinalizado ? "Sí" : "No");
+        return sb.toString();
+    }
 }

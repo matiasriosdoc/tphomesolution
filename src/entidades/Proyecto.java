@@ -9,9 +9,20 @@ public class Proyecto {
 
     private Integer numeroProyecto;
     private Map<String, Tarea> tareaMap = new HashMap<>();
+
+
     private Cliente cliente;
     private String domicilio;
     private String fechaInicio;
+
+    public String getFechaInicio() {
+        return fechaInicio;
+    }
+
+    public String getFechaFin() {
+        return fechaFin;
+    }
+
     private String fechaFin;
     private String fechaEstimadaFin;
 
@@ -123,5 +134,26 @@ public class Proyecto {
             }
         }
         return empleados;
+    }
+    public Cliente getCliente() {
+        return cliente;
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Project Number: ").append(numeroProyecto).append("\n");
+        sb.append("Domicile: ").append(domicilio).append("\n");
+        sb.append("Client: ").append(cliente != null ? cliente : "N/A").append("\n");
+        sb.append("Start Date: ").append(fechaInicio).append("\n");
+        sb.append("Estimated End Date: ").append(fechaEstimadaFin).append("\n");
+        sb.append("Actual End Date: ").append(fechaFin != null ? fechaFin : "In progress").append("\n");
+        sb.append("Status: ").append(estado).append("\n");
+        sb.append("Tasks:\n");
+        for (Tarea tarea : tareaMap.values()) {
+            sb.append(tarea.toString()).append("\n");
+            sb.append("----------------------\n");
+        }
+        return sb.toString();
     }
 }
