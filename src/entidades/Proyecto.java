@@ -114,4 +114,14 @@ public class Proyecto {
         Tarea tarea = tareaMap.get(titulo);
         tarea.finalizarTarea();
     }
+
+    public List<Integer> obtenerEmpleadosAsignados() {
+        List<Integer> empleados = new ArrayList<>();
+        for (Tarea tarea : tareaMap.values()) {
+            if (tarea.empleadoAsignadoLegajo != null) {
+                empleados.add(tarea.empleadoAsignadoLegajo);
+            }
+        }
+        return empleados;
+    }
 }

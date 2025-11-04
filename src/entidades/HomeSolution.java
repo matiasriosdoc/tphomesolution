@@ -89,7 +89,13 @@ public class HomeSolution implements IHomeSolution {
 
     @Override
     public void finalizarProyecto(Integer numero, String fin) throws IllegalArgumentException {
-        proyectoMap.get(numero).finalizarProyecto(fin);
+        Proyecto proyecto =proyectoMap.get(numero);
+        proyecto.finalizarProyecto(fin);
+        empleadosAsignadosAProyecto(numero).forEach(tuplaEmpleado -> {
+            Empleado empleado = empleadoMap.get(tuplaEmpleado.getValor1());
+            empleado.setDisponible(true);
+        });
+
     }
 
     @Override
@@ -159,9 +165,15 @@ public class HomeSolution implements IHomeSolution {
 
     @Override
     public List<Tupla<Integer, String>> empleadosAsignadosAProyecto(Integer numero) {
+        List<Tupla<Integer, String>> empleadosAsignadosAProyecto = new ArrayList<>();
         Proyecto proyecto = proyectoMap.get(numero);
-        // proyecto.
-        return Collections.emptyList();
+
+        List<Integer>  empleadosAsignados = proyecto.obtenerEmpleadosAsignados();
+
+        for (Integer legajo : empleadosAsignados) {
+            empleadosAsignadosAProyecto.add(new Tupla<>(legajo, empleadoMap.get(legajo).getNombre()));
+        }
+        return empleadosAsignadosAProyecto;
     }
 
     @Override
