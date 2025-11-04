@@ -1,17 +1,15 @@
 package entidades;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class Proyecto {
 
-
-    private Integer id;
+    private Integer numeroProyecto;
     private Map<String, Tarea> tareaMap = new HashMap<>();
-
     private Cliente cliente;
-
-
     private String domicilio;
     private String fechaInicio;
     private String fechaFin;
@@ -25,7 +23,7 @@ public class Proyecto {
         if (titulos.length != descripciones.length || titulos.length != dias.length) {
             throw new IllegalArgumentException("All arrays must have the same length.");
         }
-        this.id = IdGenerator.nextId();
+        this.numeroProyecto = IdGenerator.nextId();
         this.domicilio = domicilio;
         this.cliente = cliente;
         this.fechaInicio = inicio;
@@ -43,7 +41,7 @@ public class Proyecto {
             Tarea tarea = new Tarea(titulos[i], descripciones[i], dias[i]);
             tareaMap.put(titulos[i], tarea);
         }
-        
+
         this.estado = Estado.pendiente;
     }
 
@@ -51,8 +49,8 @@ public class Proyecto {
         return domicilio;
     }
 
-    public Integer getId() {
-        return id;
+    public Integer getNumeroProyecto() {
+        return numeroProyecto;
     }
 
     public String getEstado() {
@@ -62,38 +60,58 @@ public class Proyecto {
     public void finalizarProyecto(String fechaFin) throws IllegalArgumentException {
         FechaUtil.validarFecha(fechaFin);
         FechaUtil.validarFechas(this.fechaInicio, fechaFin);
-        for(Tarea tarea : tareaMap.values()) {
+        for (Tarea tarea : tareaMap.values()) {
             tarea.finalizarTarea();
         }
         this.fechaFin = fechaFin;
-        this.estado=Estado.finalizado;
+        this.estado = Estado.finalizado;
 
     }
 
     public Object[] tareasProyectoNoAsignadas() {
-        return tareaMap.values().stream()
-                .filter(tarea -> tarea.empleadoAsignadoLegajo == null)
-                .toArray();
+        List<Tarea> noAsignadas = new ArrayList<>();
+        for (Tarea tarea : tareaMap.values()) {
+            if (tarea.empleadoAsignadoLegajo == null) {
+                noAsignadas.add(tarea);
+            }
+        }
+        return noAsignadas.toArray();
     }
 
-    public void asignarEmpleados(String tituloTarea, Integer legajoEmpleado){
+    public void asignarEmpleados(String tituloTarea, Integer legajoEmpleado) {
         Tarea tarea = obtenerTareaPorTitulo(tituloTarea);
         tarea.asignarEmpleado(legajoEmpleado);
-        if(tareaMap.values().stream().allMatch(t -> t.empleadoAsignadoLegajo != null)){
-            this.estado=Estado.activo;
-        }
+        verificarTodasLasTareasAsignadas();
     }
 
+    private void verificarTodasLasTareasAsignadas() {
+        boolean todasAsignadas = true;
+        for (Tarea t : tareaMap.values()) {
+            if (t.empleadoAsignadoLegajo == null) {
+                todasAsignadas = false;
+                break;
+            }
+        }
+        if (todasAsignadas) {
+            this.estado = Estado.activo;
+        }
+    }
     public void registrarRetrasoEnTarea(String titulo, double cantidadDias) {
         Tarea tarea = obtenerTareaPorTitulo(titulo);
         tarea.registrarRetraso(cantidadDias);
         this.fechaFin = FechaUtil.sumarDiasAFecha(this.fechaFin, cantidadDias);
     }
-    private Tarea obtenerTareaPorTitulo(String titulo){
+
+    private Tarea obtenerTareaPorTitulo(String titulo) {
         Tarea tarea = tareaMap.get(titulo);
-        if(tarea==null){
+        if (tarea == null) {
             throw new IllegalArgumentException("Tarea no encontrada: " + titulo);
         }
         return tarea;
+    }
+
+    public void finalizarTarea(String titulo) {
+        Tarea tarea = tareaMap.get(titulo);
+        tarea.finalizarTarea();
     }
 }

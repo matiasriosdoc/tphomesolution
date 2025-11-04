@@ -3,8 +3,8 @@ package entidades;
 import java.util.*;
 
 public class HomeSolution implements IHomeSolution {
-    List<Tupla<Integer, String>> empleados = new ArrayList<>();
-    List<Tupla<Integer, String>> proyectos = new ArrayList<>();
+    private List<Tupla<Integer, String>> empleados = new ArrayList<>();
+    private List<Tupla<Integer, String>> proyectos = new ArrayList<>();
 
     private final Map<Integer, Proyecto> proyectoMap = new HashMap<>();
     private final Map<Integer, Empleado> empleadoMap = new HashMap<>();
@@ -32,8 +32,8 @@ public class HomeSolution implements IHomeSolution {
         Cliente clienteObj = new Cliente(cliente[0], cliente[1]);
         Proyecto proyecto = new Proyecto(titulos, descripcion, dias, domicilio, clienteObj, inicio, fin);
 
-        proyectos.add(new Tupla<>(proyecto.getId(), proyecto.getDomicilio()));
-        proyectoMap.put(proyecto.getId(), proyecto);
+        proyectos.add(new Tupla<>(proyecto.getNumeroProyecto(), proyecto.getDomicilio()));
+        proyectoMap.put(proyecto.getNumeroProyecto(), proyecto);
     }
 
     @Override
@@ -82,6 +82,8 @@ public class HomeSolution implements IHomeSolution {
 
     @Override
     public void finalizarTarea(Integer numero, String titulo) throws Exception {
+        Proyecto proyecto = proyectoMap.get(numero);
+        proyecto.finalizarTarea(titulo);
 
     }
 
@@ -107,66 +109,58 @@ public class HomeSolution implements IHomeSolution {
 
     @Override
     public List<Tupla<Integer, String>> proyectosFinalizados() {
-        List<Tupla<Integer, String>> proyectos = new ArrayList<>();
-        for (Map.Entry<Integer, Proyecto> entry : proyectoMap.entrySet()) {
-            Proyecto proyecto = entry.getValue();
-            if (proyecto.getEstado().equals(Estado.finalizado)) {
-                proyectos.add(new Tupla<>(proyecto.getId(), proyecto.getDomicilio()));
-            }
-        }
-        return proyectos;
+        return this.proyectosPorEstado(Estado.finalizado);
     }
 
     @Override
     public List<Tupla<Integer, String>> proyectosPendientes() {
-        List<Tupla<Integer, String>> proyectos = new ArrayList<>();
-        for (Map.Entry<Integer, Proyecto> entry : proyectoMap.entrySet()) {
-            Proyecto proyecto = entry.getValue();
-            if (proyecto.getEstado().equals(Estado.pendiente)) {
-                proyectos.add(new Tupla<>(proyecto.getId(), proyecto.getDomicilio()));
-            }
-        }
-        return proyectos;
+        return this.proyectosPorEstado(Estado.pendiente);
     }
 
     @Override
     public List<Tupla<Integer, String>> proyectosActivos() {
+        return this.proyectosPorEstado(Estado.activo);
+    }
 
-        List<Tupla<Integer, String>> proyectos = new ArrayList<>();
-        for (Map.Entry<Integer, Proyecto> entry : proyectoMap.entrySet()) {
-            Proyecto proyecto = entry.getValue();
-            if (proyecto.getEstado().equals(Estado.activo)) {
-                proyectos.add(new Tupla<>(proyecto.getId(), proyecto.getDomicilio()));
+    private List<Tupla<Integer, String>> proyectosPorEstado(String estado) {
+        List<Tupla<Integer, String>> proyectosPorEstado = new ArrayList<>();
+
+        for (Tupla<Integer, String> tuplaProyecto : this.proyectos) {
+            Proyecto proyecto = proyectoMap.get(tuplaProyecto.getValor1());
+            if (proyecto.getEstado().equals(estado)) {
+                proyectosPorEstado.add(tuplaProyecto);
             }
         }
-        return proyectos;
+        return proyectosPorEstado;
     }
 
     @Override
     public Object[] empleadosNoAsignados() {
-        List<Empleado> empleados = new ArrayList<>();
-        for(Map.Entry<Integer, Empleado> entry : empleadoMap.entrySet()) {
-            Empleado empleado = entry.getValue();
-            if(empleado.isDisponible())
-                empleados.add(empleado);
+        List<Empleado> empleadosNoAsignados = new ArrayList<>();
+
+        for (Tupla<Integer, String> tuplaEmpleado : this.empleados) {
+            Empleado empleado = empleadoMap.get(tuplaEmpleado.getValor1());
+            if (empleado.isDisponible()) {
+                empleadosNoAsignados.add(empleado);
+            }
         }
-        return empleados.toArray();
+        return empleadosNoAsignados.toArray();
     }
 
     @Override
     public boolean estaFinalizado(Integer numero) {
-        return false;
+        return proyectoMap.get(numero).getEstado().equals(Estado.finalizado);
     }
 
     @Override
     public int consultarCantidadRetrasosEmpleado(Integer legajo) {
-        return 0;
+        return empleadoMap.get(legajo).getCantidadRetrasos();
     }
 
     @Override
     public List<Tupla<Integer, String>> empleadosAsignadosAProyecto(Integer numero) {
         Proyecto proyecto = proyectoMap.get(numero);
-        proyecto.
+        // proyecto.
         return Collections.emptyList();
     }
 
@@ -184,12 +178,13 @@ public class HomeSolution implements IHomeSolution {
 
     @Override
     public String consultarDomicilioProyecto(Integer numero) {
-        return "";
+        Proyecto proyecto = proyectoMap.get(numero);
+        return proyecto.getDomicilio();
     }
 
     @Override
     public boolean tieneRestrasos(Integer legajo) {
-        return false;
+        return empleadoMap.get(legajo).getCantidadRetrasos() > 0;
     }
 
     @Override
@@ -199,6 +194,6 @@ public class HomeSolution implements IHomeSolution {
 
     @Override
     public String consultarProyecto(Integer numero) {
-        return "";
+        return proyectoMap.get(numero).toString();
     }
 }

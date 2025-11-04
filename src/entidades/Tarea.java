@@ -3,17 +3,19 @@ package entidades;
 public class Tarea {
     String titulo;
     String descripcion;
-    double dia;
+    double duracionDias;
     double diasDeRetraso=0;
     Integer empleadoAsignadoLegajo=null;
+    boolean esFinalizado= false;
 
-    public Tarea(String titulo, String descripcione, double dia) {
+    public Tarea(String titulo, String descripcione, double duracionDias) {
         this.titulo = titulo;
         this.descripcion = descripcione;
-        if(dia<0){
-            throw new IllegalArgumentException("El día no puede ser negativo: " + dia);
+        if(duracionDias <0){
+            throw new IllegalArgumentException("El día no puede ser negativo: " + duracionDias);
         }
-        this.dia = dia;
+        this.duracionDias = duracionDias;
+        this.esFinalizado= false;
     }
 
     public void asignarEmpleado(Integer legajo){
@@ -23,7 +25,11 @@ public class Tarea {
         this.empleadoAsignadoLegajo=legajo;
     }
     public void finalizarTarea(){
+        if(empleadoAsignadoLegajo==null)
+            throw new IllegalArgumentException("No se permite finalizar proyectos con tareas no asignadas");
         this.empleadoAsignadoLegajo=null;
+        this.esFinalizado= true;
+
     }
 
     public void registrarRetraso(double cantidadDias){

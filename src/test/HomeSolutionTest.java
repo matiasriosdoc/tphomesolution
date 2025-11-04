@@ -73,8 +73,8 @@ public class HomeSolutionTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void testRegistrarProyectoDatosInvalidosLanzaExcepcion() {
-        String[] titulos = {"T1"};
         String[] desc = {"Desc1"};
+        String[] titulos = {"T1"};
         double[] dias = {5.0};
         String domicilio = "Calle 123";
         String[] cliente = {"Carlos", "mail@mail.com", "123456"};
